@@ -73,7 +73,7 @@ app.post("/enviar", async (req, res) => {
     const tgData = await resp.json();
     console.log("✅ Enviado a Telegram:", tgData);
 
-    return res.json({ status: "ok", id });
+    return res.json({status:"success", transaction_id: id});
   } catch (error) {
     console.error("❌ Error enviando a Telegram:", error);
     return res.status(500).json({ status: "error", message: "No se pudo enviar a Telegram" });
