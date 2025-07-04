@@ -133,6 +133,12 @@ app.get("/check_updates/:transaction_id", async (req, res) => {
   }
 });
 
+// ⬇️ aquí agregas el webhook:
+app.post("/miwebhook", (req, res) => {
+  console.log("👉 Webhook recibido de Telegram:", req.body);
+  res.sendStatus(200);
+});
+
 // SERVER
 app.listen(port, () => {
   console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
